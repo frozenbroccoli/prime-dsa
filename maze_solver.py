@@ -29,6 +29,9 @@ class Point:
         """
         self.visited = True
 
+    def __str__(self):
+        return self.symbol
+
 
 @dataclass
 class Maze:
@@ -196,7 +199,7 @@ def walk(
         return False
 
     # 4. Reached destination
-    if current.symbol == end.symbol:
+    if current == end:
         path.append(end)
         return True
 
@@ -254,14 +257,16 @@ def main() -> None:
     -------
     None
     """
-    loaded_maze = load_maze('maze.txt')
+    loaded_maze = load_maze('res/maze_2.txt')
+    print('Puzzle:\n-------')
     print(loaded_maze)
     wall = '█'
     start = Point(x=0, y=0, symbol='S')
-    end = Point(x=20, y=19, symbol='E')
+    end = Point(x=loaded_maze.width-1, y=loaded_maze.depth-2, symbol='E')
     path = solve(loaded_maze, wall, start, end)
-    result = insert_path(loaded_maze, path, 'o')
-    print(result)
+    solved_maze = insert_path(loaded_maze, path, ':')
+    print('Solution:\n--------')
+    print(solved_maze)
 
 
 if __name__ == '__main__':
