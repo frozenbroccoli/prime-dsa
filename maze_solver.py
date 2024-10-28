@@ -156,7 +156,7 @@ def hop(maze: Maze, current: Point, direction: str) -> Point:
         case 'down':
             return maze[current.x, current.y + 1]
         case _:
-            raise ValueError(f'Accepted directions are up, down, left, and right')
+            raise ValueError('Accepted directions are up, down, left, and right')
 
 
 def walk(
@@ -258,7 +258,7 @@ def main() -> None:
     None
     """
     loaded_maze = load_maze('res/maze_2.txt')
-    print('Puzzle:\n-------')
+    print('Puzzle:\n------')
     print(loaded_maze)
     wall = '█'
     start = Point(x=0, y=0, symbol='S')
