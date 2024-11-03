@@ -17,9 +17,9 @@ class Node(typing.Generic[T]):
     next: typing.Union['Node', None] = None
 
 
-class AbstractLinkedList(ABC, typing.Generic[T]):
+class AbstractList(ABC, typing.Generic[T]):
     """
-    The interface of a linked list structure.
+    The interface of a list data structure.
     """
     _head: typing.Union[Node[T], None]
     _tail: typing.Union[Node[T], None]
@@ -57,7 +57,7 @@ class AbstractLinkedList(ABC, typing.Generic[T]):
     @abstractmethod
     def remove(self, item: T) -> typing.Union[T, None]:
         """
-        Remove all instances of the item from the list.
+        Remove the first instance of the item from the list.
 
         Parameters
         ----------
@@ -152,7 +152,7 @@ class AbstractLinkedList(ABC, typing.Generic[T]):
         pass
 
 
-class DoublyLinkedList(AbstractLinkedList):
+class DoublyLinkedList(AbstractList):
     """
     A doubly linked list.
     """
@@ -160,6 +160,37 @@ class DoublyLinkedList(AbstractLinkedList):
         self._length = 0
         self._head = None
         self._tail = None
+        self._item_type: typing.Optional[typing.Type[T]] = None
+
+    def _set_item_type(self, item: T) -> None:
+        """
+        Set item type of the list instance to ensure homogeneity.
+
+        Parameters
+        ----------
+        item
+            The item being added to the list.
+
+        Return
+        ------
+        return
+            None
+        """
+        if self._item_type is None:
+            self._item_type = type(item)
+
+    def _ensure_homogeneity(self, item: T) -> None:
+        """
+        Enforce the list's homogeneity.
+
+        Parameters
+        ----------
+        item
+            The item being added to the list.
+        """
+        self._set_item_type(item)
+        if not isinstance(item, self._item_type):
+            raise TypeError(f'Expected item of type {self._item_type}, but got {type(item)} instead')
 
     def _get_node_at(self, index: int) -> Node:
         """
@@ -240,7 +271,16 @@ class DoublyLinkedList(AbstractLinkedList):
     def __len__(self):
         return self.get_length()
 
+    def __getitem__(self, index: int) -> T:
+        return self.get(index)
+
+    def __setitem__(self, index: int, item: T) -> None:
+        self.remove_at(index)
+        self.insert_at(index, item)
+
     def prepend(self, item: T) -> None:
+        self._ensure_homogeneity(item)
+
         self._length += 1
         node = Node(value=item)
 
@@ -253,7 +293,9 @@ class DoublyLinkedList(AbstractLinkedList):
         self._head = node
 
     def insert_at(self, index: int, item: T) -> None:
-        if index > self._length:
+        self._ensure_homogeneity(item)
+
+        if index < 0 or index > self._length:
             raise IndexError(f'Index {index} is greater than the length {self._length} of the list')
         elif index == self._length:
             self.append(item)
@@ -273,6 +315,8 @@ class DoublyLinkedList(AbstractLinkedList):
         current.prev = node
 
     def append(self, item: T) -> None:
+        self._ensure_homogeneity(item)
+
         self._length += 1
         node = Node(value=item)
 
@@ -314,7 +358,7 @@ class DoublyLinkedList(AbstractLinkedList):
         return self._remove(current)
 
     def remove_at(self, index: int) -> T:
-        if index >= self._length:
+        if index < 0 or index >= self._length:
             raise IndexError(f'List index {index} out of range')
 
         current = self._get_node_at(index)
@@ -322,7 +366,7 @@ class DoublyLinkedList(AbstractLinkedList):
         return self._remove(current)
 
     def get(self, index: int) -> typing.Union[T, None]:
-        if index >= self._length:
+        if index < 0 or index >= self._length:
             raise IndexError(f'List index {index} out of range')
         current = self._get_node_at(index)
         return current.value
