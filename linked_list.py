@@ -182,6 +182,42 @@ class DoublyLinkedList(AbstractLinkedList):
         assert current is not None, f'Missing node at index {index}'
         return current
 
+    def _remove(self, node: Node) -> T:
+        """
+        Remove the given node from the list.
+
+        Parameters
+        ---------
+        node
+            The node to remove.
+
+        Return
+        ------
+        return
+            The value contained in the node.
+        """
+        self._length -= 1
+
+        if self._length == 0:
+            out = self._head.value
+            self._head = self._tail = None
+            return out
+
+        if node.prev is not None:
+            node.prev.next = node.next
+        if node.next is not None:
+            node.next.prev = node.prev
+
+        if node == self._head:
+            self._head = node.next
+
+        if node == self._tail:
+            self._tail = node.prev
+
+        node.prev = node.next = None
+
+        return node.value
+
     def __str__(self):
         if self._length == 0:
             return '[]'
@@ -197,6 +233,12 @@ class DoublyLinkedList(AbstractLinkedList):
                 break
         buffer += ']'
         return buffer
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __len__(self):
+        return self.get_length()
 
     def prepend(self, item: T) -> None:
         self._length += 1
@@ -263,63 +305,21 @@ class DoublyLinkedList(AbstractLinkedList):
         current = self._head
         for i in range(self._length):
             assert current is not None
-            current = current.next
             if current.value == item:
                 break
+            current = current.next
         else:
             return
 
-        self._length -= 1
+        return self._remove(current)
 
-        if self._length == 0:
-            out = self._head.value
-            self._head = self._tail = None
-            return out
-
-        if current.next is not None:
-            current.prev.next = current.next
-            current.next.prev = current.prev
-        else:
-            current.prev.next = None
-
-        if current == self._head:
-            self._head = current.next
-
-        if current == self._tail:
-            self._tail = current.prev
-
-        current.prev = current.next = None
-
-        return current.value
-
-    def remove_at(self, index: int) -> typing.Union[T, None]:
+    def remove_at(self, index: int) -> T:
         if index >= self._length:
             raise IndexError(f'List index {index} out of range')
 
         current = self._get_node_at(index)
 
-        self._length -= 1
-
-        if self._length == 0:
-            out = self._head.value
-            self._head = self._tail = None
-            return out
-
-        if current.next is not None:
-            current.prev.next = current.next
-            current.next.prev = current.prev
-        else:
-            current.prev.next = None
-
-        if current == self._head:
-            self._head = current.next
-
-        if current == self._tail:
-            self._tail = current.prev
-
-        current.prev = current.next = None
-
-        return current.value
+        return self._remove(current)
 
     def get(self, index: int) -> typing.Union[T, None]:
         if index >= self._length:
