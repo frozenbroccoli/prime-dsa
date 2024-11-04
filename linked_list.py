@@ -8,21 +8,21 @@ T = typing.TypeVar('T')
 
 
 @dataclass
-class Node(typing.Generic[T]):
+class ListNode(typing.Generic[T]):
     """
     A node in a linked list.
     """
     value: T
-    prev: typing.Union['Node', None] = None
-    next: typing.Union['Node', None] = None
+    prev: typing.Union['ListNode', None] = None
+    next: typing.Union['ListNode', None] = None
 
 
 class AbstractList(ABC, typing.Generic[T]):
     """
     The interface of a list data structure.
     """
-    _head: typing.Union[Node[T], None]
-    _tail: typing.Union[Node[T], None]
+    _head: typing.Union[ListNode[T], None]
+    _tail: typing.Union[ListNode[T], None]
     _length: int
 
     @abstractmethod
@@ -192,7 +192,7 @@ class DoublyLinkedList(AbstractList):
         if not isinstance(item, self._item_type):
             raise TypeError(f'Expected item of type {self._item_type}, but got {type(item)} instead')
 
-    def _get_node_at(self, index: int) -> Node:
+    def _get_node_at(self, index: int) -> ListNode:
         """
         Get the node at the specified index.
 
@@ -213,7 +213,7 @@ class DoublyLinkedList(AbstractList):
         assert current is not None, f'Missing node at index {index}'
         return current
 
-    def _remove(self, node: Node) -> T:
+    def _remove(self, node: ListNode) -> T:
         """
         Remove the given node from the list.
 
@@ -282,7 +282,7 @@ class DoublyLinkedList(AbstractList):
         self._ensure_homogeneity(item)
 
         self._length += 1
-        node = Node(value=item)
+        node = ListNode(value=item)
 
         if self._head is None:
             self._head = self._tail = node
@@ -305,7 +305,7 @@ class DoublyLinkedList(AbstractList):
             return
 
         self._length += 1
-        node = Node(value=item)
+        node = ListNode(value=item)
 
         current = self._get_node_at(index)
 
@@ -318,7 +318,7 @@ class DoublyLinkedList(AbstractList):
         self._ensure_homogeneity(item)
 
         self._length += 1
-        node = Node(value=item)
+        node = ListNode(value=item)
 
         if self._tail is None:
             self._head = self._tail = node
