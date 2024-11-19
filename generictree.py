@@ -32,6 +32,23 @@ class TreeNode(typing.Generic[T]):
         self.children.append(child)
         child.parent = self
 
+    def visit(self, action: typing.Callable[['TreeNode[T]'], typing.Any]) -> typing.Any:
+        """
+        Visit the node. Visiting can be any arbitrary action.
+
+        Parameters
+        ----------
+        action
+            The callable that implements the action to be
+                performed on visit.
+
+        Return
+        ------
+        return
+            Anything returned by the arbitrary action.
+        """
+        return action(self)
+
 
 class AbstractTree(ABC, typing.Generic[T]):
     """
@@ -140,7 +157,7 @@ class AbstractTree(ABC, typing.Generic[T]):
         pass
 
 
-class Tree(AbstractTree):
+class GenericTree(AbstractTree):
     """
     A general tree with each node having an arbitrary
     number of children.
@@ -188,6 +205,56 @@ class Tree(AbstractTree):
             start: typing.Optional[TreeNode[T]],
             visit: typing.Callable[[TreeNode[T]], None]
     ) -> None:
-        pass
+        def walk(current: TreeNode[T]) -> None:
+            """
+            Traverse the tree and visit the node when all its children
+            have been visited.
 
+            Parameters
+            ----------
+            current
+                The current node in the tree.
 
+            Return
+            ------
+            return
+                None
+            """
+            for child in current.children:
+                walk(child)
+
+            visit(current)
+
+        walk(start)
+
+    def traverse_preorder(
+            self,
+            start: typing.Optional[TreeNode[T]],
+            visit: typing.Callable[[TreeNode[T]], None]
+    ) -> None:
+        def walk(current: TreeNode[T]) -> None:
+            """
+            Visit the current node and continue to traverse the tree.
+
+            Parameters
+            ----------
+            current
+                The current node in the tree.
+
+            Return
+            ------
+            return
+                None
+            """
+            visit(current)
+
+            for child in current.children:
+                walk(child)
+
+        walk(start)
+
+    def remove(self, node: TreeNode[T]) -> None:
+        node.parent.children.remove(node)
+        node.parent = None
+        node.children.clear()
+        del node
