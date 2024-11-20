@@ -15,6 +15,12 @@ class TreeNode(typing.Generic[T]):
     parent: typing.Union['TreeNode[T]', None] = None
     children: typing.List['TreeNode[T]'] = dataclasses.field(default_factory=list)
 
+    def __repr__(self):
+        return str(self.value)
+
+    def __str__(self):
+        return str(self.value)
+
     def add_child(self, child: 'TreeNode[T]') -> None:
         """
         Add a child node to this node.
@@ -258,3 +264,37 @@ class GenericTree(AbstractTree):
         node.parent = None
         node.children.clear()
         del node
+
+
+def main() -> None:
+    """
+    Main function to run the module for tests.
+    """
+    my_tree = GenericTree(0)
+
+    for i in range(1, 4):
+        my_tree.insert(i, my_tree.root)
+
+    for node in my_tree.root.children:
+        for i in range(1, 3):
+            my_tree.insert(node.value + i, node)
+        for child in node.children:
+            for j in range(1, 3):
+                my_tree.insert(child.value + j, child)
+
+    print(f'Root: \n{my_tree.root}')
+    print(f'Primary children: \n{my_tree.root.children}')
+    print(f'Secondary children: \n{[child for node in my_tree.root.children for child in node.children]}')
+    print(f'Tertiary children: \n{[grandchild for node in my_tree.root.children for child in node.children
+                                   for grandchild in child.children]}')
+
+    print(f'Traversing pre-order: ')
+    my_tree.traverse_preorder(start=my_tree.root, visit=print)
+
+    print('Traversing post-order: ')
+    my_tree.traverse_postorder(start=my_tree.root, visit=print)
+
+
+if __name__ == '__main__':
+    main()
+
