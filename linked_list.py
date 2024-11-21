@@ -16,6 +16,12 @@ class ListNode(typing.Generic[T]):
     prev: typing.Union['ListNode', None] = None
     next: typing.Union['ListNode', None] = None
 
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self.value)
+
 
 class AbstractList(ABC, typing.Generic[T]):
     """
