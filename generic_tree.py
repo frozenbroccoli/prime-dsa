@@ -6,22 +6,60 @@ from abc import abstractmethod, ABC
 T = typing.TypeVar('T')
 
 
+class HomogeneousList(list):
+    """
+    A list that allows elements of only one data type
+    but the elements are nullable.
+    """
+    def __init__(self, elem_type: typing.Type):
+        super().__init__()
+        self._elem_type = elem_type
+        for item in self:
+            self._validate(item)
+
+    def _validate(self, item: T):
+        """
+        Validate that the elements of the list all have
+        the same specified type.
+        """
+        if not isinstance(item, (self._elem_type, type(None))):
+            raise TypeError(f'Expected item of type {self._elem_type.__name__}, got {type(item)} instead')
+
+    def append(self, __object):
+        self._validate(__object)
+        super().append(__object)
+
+    def extend(self, __iterable):
+        for item in __iterable:
+            self._validate(item)
+        super().extend(__iterable)
+
+    def get_type(self) -> typing.Type:
+        """
+        Returns the type of the elements of the list.
+        """
+        return self._elem_type
+
+
 @dataclasses.dataclass
 class TreeNode(typing.Generic[T]):
     """
     A node in a tree.
     """
-    value: T
-    parent: typing.Union['TreeNode[T]', None] = None
-    children: typing.List['TreeNode[T]'] = dataclasses.field(default_factory=list)
+    def __init__(self, value: T):
+        self.value = value
+        self._value_type = type(self.value)
+        self.parent = None
+        self.children = HomogeneousList(elem_type=type(self))
 
     def __repr__(self):
-        return str(self.value)
+        return (f'TreeNode(value={self.value}, parent={self.parent.value if self.parent is not None else None}, '
+                f'children={[child.value for child in self.children]})')
 
     def __str__(self):
-        return str(self.value)
+        return self.__repr__()
 
-    def add_child(self, child: 'TreeNode[T]') -> None:
+    def add_child(self, child: 'TreeNode[T]', index: typing.Optional[int] = None) -> None:
         """
         Add a child node to this node.
 
@@ -29,13 +67,25 @@ class TreeNode(typing.Generic[T]):
         ----------
         child
             The child node to add.
+        index
+            The index of the child in the list of children.
 
         Return
         ------
         return
             None
         """
-        self.children.append(child)
+        assert isinstance(child, TreeNode), 'The child must be a TreeNode'
+        assert isinstance(child.value, self._value_type), (f'Expected child node holding value of type'
+                                                           f' {self._value_type}, got '
+                                                           f'{type(child.value)} instead')
+        if index is None:
+            self.children.append(child)
+        else:
+            try:
+                self.children[index] = child
+            except IndexError:
+                raise IndexError(f'Index {index} is out of bounds of the list of child nodes')
         child.parent = self
 
     def visit(self, action: typing.Callable[['TreeNode[T]'], typing.Any]) -> typing.Any:
@@ -61,41 +111,29 @@ class BinaryTreeNode(TreeNode):
     """
     A node in a binary tree.
     """
-    def __init__(
-            self,
-            value: T,
-            left: typing.Union['BinaryTreeNode[T]', None] = None,
-            right: typing.Union['BinaryTreeNode[T]', None] = None
-    ):
+    def __init__(self, value: T):
         super().__init__(value)
-        self.left = left
-        self.right = right
-        super().__setattr__('children', [left, right])
+        self.children.extend([None, None])
 
-    @property
-    def children(self):
-        """
-        Read-only property.
-        """
-        return self.children
+    def __repr__(self):
+        return (f'BinaryTreeNode(value={self.value}, parent={self.parent.value if self.parent is not None else None}, '
+                f'children={[child.value if child is not None else None for child in self.children]})')
 
-    @property
-    def left(self):
-        return self.left
+    def __str__(self):
+        return self.__repr__()
 
-    @property
-    def right(self):
-        return self.right
+    def add_child(self, child: 'BinaryTreeNode[T]', index: typing.Optional[int] = None) -> None:
+        assert index == 0 or index == 1, ('Index must be either 0 or 1 for the left '
+                                          'and the right child respectively')
+        assert isinstance(child, BinaryTreeNode), 'The child must be a BinaryTreeNode'
+        assert isinstance(child.value, self._value_type), (f'Expected child node holding value of type'
+                                                           f' {self._value_type}, got '
+                                                           f'{type(child.value)} instead')
 
-    @left.setter
-    def left(self, new: typing.List['BinaryTreeNode', None]):
-        self.left = new
-        super().__setattr__('children', [new, self.children[1]])
-
-    @right.setter
-    def right(self, new: typing.List['BinaryTreeNode', None]):
-        self.right = new
-        super().__setattr__('children', [self.children[0], new])
+        if self.children[index] is None:
+            self.children[index] = child
+            return
+        raise ValueError('Cannot reassign a child node that already exists')
 
     def __post_init__(self):
         """
