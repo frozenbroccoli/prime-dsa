@@ -135,13 +135,6 @@ class BinaryTreeNode(TreeNode):
             return
         raise ValueError('Cannot reassign a child node that already exists')
 
-    def __post_init__(self):
-        """
-        Validation that the node has exactly two elements.
-        """
-        assert isinstance(self.children, list), "The children attribute of a node must be a list"
-        assert len(self.children) == 2, "A BinaryTreeNode must have exactly two children"
-
 
 class AbstractTree(ABC, typing.Generic[T]):
     """
@@ -384,4 +377,3 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
-
