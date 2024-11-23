@@ -56,6 +56,55 @@ class TreeNode(typing.Generic[T]):
         return action(self)
 
 
+@dataclasses.dataclass
+class BinaryTreeNode(TreeNode):
+    """
+    A node in a binary tree.
+    """
+    def __init__(
+            self,
+            value: T,
+            left: typing.Union['BinaryTreeNode[T]', None] = None,
+            right: typing.Union['BinaryTreeNode[T]', None] = None
+    ):
+        super().__init__(value)
+        self.left = left
+        self.right = right
+        super().__setattr__('children', [left, right])
+
+    @property
+    def children(self):
+        """
+        Read-only property.
+        """
+        return self.children
+
+    @property
+    def left(self):
+        return self.left
+
+    @property
+    def right(self):
+        return self.right
+
+    @left.setter
+    def left(self, new: typing.List['BinaryTreeNode', None]):
+        self.left = new
+        super().__setattr__('children', [new, self.children[1]])
+
+    @right.setter
+    def right(self, new: typing.List['BinaryTreeNode', None]):
+        self.right = new
+        super().__setattr__('children', [self.children[0], new])
+
+    def __post_init__(self):
+        """
+        Validation that the node has exactly two elements.
+        """
+        assert isinstance(self.children, list), "The children attribute of a node must be a list"
+        assert len(self.children) == 2, "A BinaryTreeNode must have exactly two children"
+
+
 class AbstractTree(ABC, typing.Generic[T]):
     """
     The abstract base class of a tree.
