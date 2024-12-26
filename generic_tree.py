@@ -17,10 +17,20 @@ class HomogeneousList(list):
         for item in self:
             self._validate(item)
 
-    def _validate(self, item: T):
+    def _validate(self, item: T) -> None:
         """
         Validate that the elements of the list all have
         the same specified type.
+
+        Parameters
+        ----------
+        item
+            The item in the list to validate.
+
+        Return
+        ------
+        return
+            None
         """
         if not isinstance(item, (self._elem_type, type(None))):
             raise TypeError(f'Expected item of type {self._elem_type.__name__}, got {type(item)} instead')
@@ -39,6 +49,29 @@ class HomogeneousList(list):
         Returns the type of the elements of the list.
         """
         return self._elem_type
+
+
+class Pair(HomogeneousList):
+    """
+    A homogeneous list of exactly two elements.
+    """
+    def _validate_length(self) -> None:
+        """
+        Make sure that the pair always has exactly
+        two elements.
+        """
+        assert len(self) == 2, 'A pair must always have exactly two elements'
+
+    def append(self, __object):
+        self._validate_length()
+        super().append(__object)
+
+    def clear(self):
+        self[0], self[1] = None, None
+        self._validate_length()
+
+    def extend(self, __iterable):
+        self._validate_length()
 
 
 @dataclasses.dataclass
